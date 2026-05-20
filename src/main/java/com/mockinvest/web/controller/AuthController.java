@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,7 +28,10 @@ public class AuthController {
 
     @GetMapping("/register")
     public String registerPage(Model model) {
-        model.addAttribute("registerRequest", new RegisterRequest());
+        RegisterRequest req = new RegisterRequest();
+        model.addAttribute("registerRequest", req);
+        model.addAttribute(BindingResult.MODEL_KEY_PREFIX + "registerRequest",
+                new BeanPropertyBindingResult(req, "registerRequest"));
         return "auth/register";
     }
 
