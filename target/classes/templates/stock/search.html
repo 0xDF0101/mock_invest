@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>종목 검색 - MockInvest</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background: #0f1117; color: #e0e0e0; }
+    .card { background: #1a1d2e; border: 1px solid #2a2d3e; }
+    .text-secondary { color: #9da5ae !important; }
+    .form-control { background: #0f1117; border-color: #2a2d3e; color: #e0e0e0; }
+    .form-control:focus { background: #0f1117; color: #e0e0e0; border-color: #f0b90b; box-shadow: 0 0 0 0.2rem rgba(240,185,11,.15); }
+    .form-control::placeholder { color: #666; }
+    .table { color: #e0e0e0; }
+    .table-hover tbody tr:hover { background-color: #232640; color: #e0e0e0; cursor: pointer; }
+    thead th { color: #bbb; font-weight: 500; }
+    a { color: #f0b90b; text-decoration: none; }
+    a:hover { color: #ffd234; }
+    .up { color: #26a69a; } .down { color: #ef5350; }
+    .stock-card {
+      background: #1a1d2e; border: 1px solid #2a2d3e;
+      border-radius: 8px; padding: .75rem;
+      cursor: pointer; transition: border-color .15s;
+    }
+    .stock-card:hover { border-color: #f0b90b; }
+    .spark-canvas { width: 100%; height: 65px; display: block; }
+    .section-label {
+      font-size: .75rem; color: #aaa; letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: .6rem;
+    }
+    .clickable-row:active { background-color: #232640; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container py-3 px-3 px-sm-4 pb-5 pb-lg-4" style="max-width: 900px;">
+
+  <!-- 검색창 -->
+  <form th:action="@{/stocks/search}" method="get" class="mb-4">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control form-control-lg"
+             th:value="${q}" placeholder="종목명 검색 (예: 삼성전자, 카카오, Samsung)" autofocus>
+      <button class="btn btn-warning text-dark fw-bold px-3" type="submit">검색</button>
+    </div>
+    <div class="mt-1" style="font-size:.75rem; color:#888;">한글/영문 모두 지원 · 예: 삼성전자, SK하이닉스, 카카오, Samsung, Kakao</div>
+  </form>
+
+  <!-- ── 검색 결과 ── -->
+  <div th:if="${results != null}">
+    <div th:if="${results.isEmpty()}" class="text-center py-5" style="color:#aaa;">
+      검색 결과가 없습니다.
+    </div>
+
+    <div th:if="${!results.isEmpty()}">
+      <div class="section-label">검색 결과 <span style="color:#f0b90b;" th:text="${results.size() + '건'}"></span></div>
+      <div class="card">
+        <!-- 모바일: 리스트형 -->
+        <div class="d-sm-none">
+          <div th:each="s : ${results}"
+               th:data-href="@{/stocks/{ticker}(ticker=${s.ticker})}"
+               class="clickable-row d-flex align-items-center justify-content-between px-3 py-3"
+               style="border-bottom: 1px solid #2a2d3e; cursor:pointer;">
+            <div>
+              <div class="fw-bold" th:text="${s.name}"></div>
+              <div style="font-size:.75rem; color:#aaa;" th:text="${s.ticker}"></div>
+            </div>
+            <span class="badge"
+                  th:classappend="${s.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
+                  th:text="${s.market}"></span>
+          </div>
+        </div>
+        <!-- 데스크톱: 테이블형 -->
+        <table class="table table-hover mb-0 align-middle d-none d-sm-table">
+          <thead>
+            <tr>
+              <th class="ps-3">종목명</th>
+              <th>티커</th>
+              <th>시장</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="s : ${results}"
+                th:data-href="@{/stocks/{ticker}(ticker=${s.ticker})}"
+                class="clickable-row" style="cursor:pointer;">
+              <td class="ps-3 fw-bold" th:text="${s.name}"></td>
+              <td style="color:#aaa; font-size:.85rem;" th:text="${s.ticker}"></td>
+              <td>
+                <span class="badge"
+                      th:classappend="${s.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
+                      th:text="${s.market}"></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 추천 종목 (검색 전 기본 화면) ── -->
+  <div th:if="${results == null}">
+    <!-- KOSPI 추천 -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="section-label mb-0">KOSPI 추천 종목</div>
+        <span class="badge bg-primary" style="font-size:.65rem;">KOSPI</span>
+      </div>
+      <div class="row g-2" id="kospi-grid">
+        <!-- JS로 렌더링 -->
+        <div class="col-12 text-center py-4" id="kospi-loading">
+          <div class="spinner-border spinner-border-sm text-warning" role="status" style="width:1.1rem;height:1.1rem;"></div>
+          <span class="ms-2" style="color:#888; font-size:.85rem;">종목 불러오는 중...</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="section-label mb-0">KOSDAQ 추천 종목</div>
+        <span class="badge bg-success" style="font-size:.65rem;">KOSDAQ</span>
+      </div>
+      <div class="row g-2" id="kosdaq-grid">
+        <div class="col-12 text-center py-4" id="kosdaq-loading">
+          <div class="spinner-border spinner-border-sm text-warning" role="status" style="width:1.1rem;height:1.1rem;"></div>
+          <span class="ms-2" style="color:#888; font-size:.85rem;">종목 불러오는 중...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div th:replace="~{fragments/navbar :: bottomnav}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── 검색 결과 행 클릭 ────────────────────────────
+  document.querySelectorAll('.clickable-row').forEach(row => {
+    row.addEventListener('click', () => window.location.href = row.dataset.href);
+  });
+
+  // ── 스파크라인 ────────────────────────────────────
+  function drawSparkline(canvas, prices, isUp) {
+    if (!canvas || !prices || prices.length < 2) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.offsetWidth || 160;
+    const h = canvas.offsetHeight || 65;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const valid = prices.filter(p => p > 0);
+    if (valid.length < 2) return;
+    const min = Math.min(...valid), max = Math.max(...valid);
+    const range = max - min || 1;
+    const pad = 3;
+    const color = isUp ? '#26a69a' : '#ef5350';
+    const xOf = i => (i / (valid.length - 1)) * w;
+    const yOf = p => h - pad - ((p - min) / range) * (h - pad * 2);
+
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, isUp ? 'rgba(38,166,154,.3)' : 'rgba(239,83,80,.3)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    valid.forEach((p, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(p)) : ctx.lineTo(xOf(i), yOf(p)));
+    ctx.lineTo(xOf(valid.length - 1), h); ctx.lineTo(0, h); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    ctx.beginPath();
+    valid.forEach((p, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(p)) : ctx.lineTo(xOf(i), yOf(p)));
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.stroke();
+  }
+
+  function loadSparkForCanvas(canvas) {
+    const ticker = canvas.dataset.ticker;
+    const isUp = canvas.dataset.up === 'true';
+    fetch(`/api/stocks/history/${encodeURIComponent(ticker)}?period=1mo`)
+      .then(r => r.json())
+      .then(data => drawSparkline(canvas, data.map(d => d.close), isUp))
+      .catch(() => {});
+  }
+
+  // ── 추천 종목 카드 렌더링 ─────────────────────────
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // 카드 HTML 생성 (캔들 데이터는 응답에 이미 포함 → 별도 fetch 없음)
+  function renderStockCard(s, id) {
+    const isUp = Number(s.changePercent) >= 0;
+    const sign = isUp ? '+' : '';
+    const mktClass = s.market === 'KOSPI' ? 'bg-primary' : 'bg-success';
+    const price = Number(s.price).toLocaleString('ko-KR');
+    const chPct = sign + Number(s.changePercent).toFixed(2) + '%';
+    const colClass = isUp ? 'up' : 'down';
+    return `
+      <div class="col-6 col-md-4">
+        <div class="stock-card h-100" onclick="location.href='/stocks/${encodeURIComponent(s.ticker)}'">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <div style="min-width:0;">
+              <div class="fw-bold text-truncate" style="font-size:.85rem;">${escHtml(s.name)}</div>
+              <div style="font-size:.7rem; color:#aaa;">${escHtml(s.ticker)}</div>
+            </div>
+            <span class="badge ${mktClass} ms-1 flex-shrink-0" style="font-size:.6rem;">${s.market}</span>
+          </div>
+          <canvas id="${id}" class="spark-canvas rounded" style="background:#141726;"></canvas>
+          <div class="mt-1 d-flex justify-content-between align-items-baseline">
+            <span class="fw-bold" style="font-size:.88rem;">${price}원</span>
+            <span class="small ${colClass}">${chPct}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // 추천 종목 로드 — API 1회 호출로 가격 + 캔들 한 번에 수신
+  const kospiGrid = document.getElementById('kospi-grid');
+  const kosdaqGrid = document.getElementById('kosdaq-grid');
+
+  if (kospiGrid) {
+    fetch('/api/stocks/featured?limit=12')
+      .then(r => r.json())
+      .then(all => {
+        const kospi  = all.filter(s => s.market === 'KOSPI').slice(0, 6);
+        const kosdaq = all.filter(s => s.market === 'KOSDAQ').slice(0, 6);
+
+        document.getElementById('kospi-loading')?.remove();
+        document.getElementById('kosdaq-loading')?.remove();
+
+        if (kospi.length === 0) {
+          kospiGrid.innerHTML = '<div class="col-12"><p style="color:#666;font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
+        } else {
+          kospiGrid.innerHTML = kospi.map((s, i) => renderStockCard(s, `spark-k-${i}`)).join('');
+          // 응답에 포함된 캔들로 즉시 렌더링 (추가 fetch 없음)
+          kospi.forEach((s, i) => {
+            const canvas = document.getElementById(`spark-k-${i}`);
+            drawSparkline(canvas, (s.candles || []).map(c => c.close), Number(s.changePercent) >= 0);
+          });
+        }
+
+        if (kosdaq.length === 0) {
+          kosdaqGrid.innerHTML = '<div class="col-12"><p style="color:#666;font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
+        } else {
+          kosdaqGrid.innerHTML = kosdaq.map((s, i) => renderStockCard(s, `spark-q-${i}`)).join('');
+          kosdaq.forEach((s, i) => {
+            const canvas = document.getElementById(`spark-q-${i}`);
+            drawSparkline(canvas, (s.candles || []).map(c => c.close), Number(s.changePercent) >= 0);
+          });
+        }
+      })
+      .catch(() => {
+        document.getElementById('kospi-loading')?.remove();
+        document.getElementById('kosdaq-loading')?.remove();
+      });
+  }
+</script>
+</body>
+</html>
