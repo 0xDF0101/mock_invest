@@ -9,6 +9,7 @@ com/mockinvest/event/TradeCompletedEvent.class
 com/mockinvest/web/dto/TradeRequest.class
 com/mockinvest/infrastructure/stockprice/yahoo/YahooFinanceProvider.class
 com/mockinvest/config/AppConfig.class
+com/mockinvest/domain/market/MarketHoursService.class
 com/mockinvest/web/controller/DashboardController.class
 com/mockinvest/web/dto/PortfolioDto.class
 com/mockinvest/infrastructure/stockprice/CandleDto.class

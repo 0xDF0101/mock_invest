@@ -2,6 +2,7 @@ package com.mockinvest.web.controller;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.mockinvest.domain.market.MarketHoursService;
 import com.mockinvest.domain.portfolio.HoldingRepository;
 import com.mockinvest.domain.stock.Stock;
 import com.mockinvest.domain.stock.StockService;
@@ -29,6 +30,7 @@ public class StockController {
     private final StockPriceProvider stockPriceProvider;
     private final HoldingRepository holdingRepository;
     private final UserService userService;
+    private final MarketHoursService marketHoursService;
 
     // 추천 종목 결과를 1분간 캐싱 (가격 + 캔들 포함)
     private final Cache<String, List<Map<String, Object>>> featuredCache = Caffeine.newBuilder()
@@ -65,6 +67,10 @@ public class StockController {
         model.addAttribute("candles", candles);
         model.addAttribute("period", period);
         model.addAttribute("heldQuantity", heldQuantity);
+        model.addAttribute("marketOpen", marketHoursService.isOpen());
+        model.addAttribute("marketStatus", marketHoursService.getStatusLabel());
+        model.addAttribute("nextEventMs", marketHoursService.getNextEventMillis());
+        model.addAttribute("nextEventOpen", marketHoursService.isNextEventOpen());
         return "stock/detail";
     }
 

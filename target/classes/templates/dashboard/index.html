@@ -67,6 +67,19 @@
             th:classappend="${kosdaq.change() >= 0} ? 'up' : 'down'"
             th:text="${kosdaq.change() >= 0 ? '+' : ''} + ${#numbers.formatDecimal(kosdaq.changePercent(), 1, 2)} + '%'"></span>
     </div>
+    <div class="index-pill">
+      <span class="small" style="color:#aaa;">시장</span>
+      <span class="badge"
+            th:classappend="${marketOpen} ? 'bg-success' : 'bg-secondary'"
+            th:text="${marketStatus}"></span>
+    </div>
+    <div class="index-pill"
+         id="countdown-pill"
+         th:data-target-ms="${nextEventMs}"
+         th:data-next-open="${nextEventOpen}">
+      <span class="small" id="countdown-label" style="color:#aaa;">--</span>
+      <span class="fw-bold" id="countdown-timer" style="font-variant-numeric:tabular-nums;">--:--:--</span>
+    </div>
     <a th:href="@{/stocks/search}" class="btn btn-warning btn-sm text-dark fw-bold ms-auto">+ 종목 검색</a>
   </div>
 
@@ -202,6 +215,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  // ── 카운트다운 ────────────────────────────────────
+  (function() {
+    const pill       = document.getElementById('countdown-pill');
+    const targetMs   = parseInt(pill.dataset.targetMs, 10);
+    const isNextOpen = pill.dataset.nextOpen === 'true';
+    const labelEl    = document.getElementById('countdown-label');
+    const timerEl    = document.getElementById('countdown-timer');
+    labelEl.textContent = isNextOpen ? '장 시작까지' : '장마감까지';
+
+    function fmt(diff) {
+      if (diff <= 0) return '00:00:00';
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const hms = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      return d > 0 ? `${d}일 ${hms}` : hms;
+    }
+
+    function tick() {
+      const diff = targetMs - Date.now();
+      if (diff <= 0) { location.reload(); return; }
+      timerEl.textContent = fmt(diff);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
   // ── 지수 폴링 ──────────────────────────────────────
   function updateIndex(ticker, priceId, changeId) {
     fetch(`/api/stocks/price/${encodeURIComponent(ticker)}`)

@@ -43,6 +43,10 @@
             <span class="badge ms-1"
                   th:classappend="${stock.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
                   th:text="${stock.market}"></span>
+            <span class="badge ms-1"
+                  th:classappend="${marketOpen} ? 'bg-success' : 'bg-secondary'"
+                  th:text="${marketStatus}"></span>
+            <span class="ms-2 small" id="detail-countdown" style="color:#888; font-variant-numeric:tabular-nums;"></span>
           </div>
           <div class="text-end">
             <div class="fs-5 fw-bold" id="current-price"
@@ -79,6 +83,12 @@
       <div th:if="${successMessage}" class="alert alert-success py-2 small mb-2" th:text="${successMessage}"></div>
       <div th:if="${errorMessage}" class="alert alert-danger py-2 small mb-2" th:text="${errorMessage}"></div>
 
+      <!-- 장마감 안내 -->
+      <div th:unless="${marketOpen}" class="alert py-2 small mb-2 text-center"
+           style="background:#1e2235;border:1px solid #2a2d3e;color:#888;">
+        현재 장 운영 시간이 아닙니다 · 평일 09:00 ~ 15:30
+      </div>
+
       <!-- 모바일: 탭 UI -->
       <div class="card d-lg-none">
         <div class="d-flex border-bottom border-secondary">
@@ -103,7 +113,7 @@
               <span>예상 금액</span>
               <span id="buy-amount-m">-</span>
             </div>
-            <button type="submit" class="btn btn-success w-100 fw-bold">매수</button>
+            <button type="submit" class="btn btn-success w-100 fw-bold" th:disabled="${!marketOpen}">매수</button>
           </form>
         </div>
 
@@ -120,7 +130,7 @@
               <span>예상 금액</span>
               <span id="sell-amount-m">-</span>
             </div>
-            <button type="submit" class="btn btn-danger w-100 fw-bold">매도</button>
+            <button type="submit" class="btn btn-danger w-100 fw-bold" th:disabled="${!marketOpen}">매도</button>
           </form>
         </div>
       </div>
@@ -138,7 +148,7 @@
             <span>예상 금액</span>
             <span id="buy-amount">-</span>
           </div>
-          <button type="submit" class="btn btn-success w-100 fw-bold">매수</button>
+          <button type="submit" class="btn btn-success w-100 fw-bold" th:disabled="${!marketOpen}">매수</button>
         </form>
       </div>
 
@@ -156,7 +166,7 @@
             <span>예상 금액</span>
             <span id="sell-amount">-</span>
           </div>
-          <button type="submit" class="btn btn-danger w-100 fw-bold">매도</button>
+          <button type="submit" class="btn btn-danger w-100 fw-bold" th:disabled="${!marketOpen}">매도</button>
         </form>
       </div>
     </div>
@@ -171,6 +181,32 @@
   const ticker = /*[[${stock.ticker}]]*/ '';
   let currentPrice = /*[[${price.price()}]]*/ 0;
   let currentPeriod = /*[[${period}]]*/ '1mo';
+
+  // ── 카운트다운 ────────────────────────────────────
+  (function() {
+    const targetMs   = /*[[${nextEventMs}]]*/ 0;
+    const isNextOpen = /*[[${nextEventOpen}]]*/ true;
+    const el         = document.getElementById('detail-countdown');
+
+    function fmt(diff) {
+      if (diff <= 0) return null;
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const hms = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      return d > 0 ? `${d}일 ${hms}` : hms;
+    }
+
+    function tick() {
+      const diff = targetMs - Date.now();
+      if (diff <= 0) { location.reload(); return; }
+      const label = isNextOpen ? '장 시작까지 ' : '장마감까지 ';
+      el.textContent = label + fmt(diff);
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
 
   const chartEl = document.getElementById('chart');
   const chart = LightweightCharts.createChart(chartEl, {

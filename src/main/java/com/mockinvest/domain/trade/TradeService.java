@@ -1,5 +1,6 @@
 package com.mockinvest.domain.trade;
 
+import com.mockinvest.domain.market.MarketHoursService;
 import com.mockinvest.domain.portfolio.Holding;
 import com.mockinvest.domain.portfolio.HoldingRepository;
 import com.mockinvest.domain.stock.Stock;
@@ -27,9 +28,13 @@ public class TradeService {
     private final StockService stockService;
     private final StockPriceProvider stockPriceProvider;
     private final ApplicationEventPublisher eventPublisher;
+    private final MarketHoursService marketHoursService;
 
     @Transactional
     public Trade buy(String username, String ticker, int quantity) {
+        if (!marketHoursService.isOpen()) {
+            throw new IllegalStateException("장 운영 시간이 아닙니다. 평일 09:00 ~ 15:30에 거래 가능합니다.");
+        }
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);
 
@@ -49,6 +54,9 @@ public class TradeService {
 
     @Transactional
     public Trade sell(String username, String ticker, int quantity) {
+        if (!marketHoursService.isOpen()) {
+            throw new IllegalStateException("장 운영 시간이 아닙니다. 평일 09:00 ~ 15:30에 거래 가능합니다.");
+        }
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);
 
