@@ -11,4 +11,7 @@ public interface HoldingRepository extends JpaRepository<Holding, Long> {
 
     @Query("SELECT h FROM Holding h JOIN FETCH h.stock WHERE h.user.id = :userId AND h.quantity > 0")
     List<Holding> findActiveHoldingsByUserId(Long userId);
+
+    @Query("SELECT h FROM Holding h JOIN FETCH h.stock JOIN FETCH h.user WHERE h.quantity > 0")
+    List<Holding> findAllActiveHoldings();
 }

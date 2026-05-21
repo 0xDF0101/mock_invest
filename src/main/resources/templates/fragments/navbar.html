@@ -59,6 +59,9 @@
         <li class="nav-item">
           <a class="nav-link" th:href="@{/trade/history}">거래내역</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/ranking}">랭킹</a>
+        </li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-3" sec:authorize="isAuthenticated()">
@@ -92,6 +95,10 @@
     <a th:href="@{/trade/history}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
       <div style="font-size:1.3rem;">📋</div>
       <div style="font-size:.65rem;">거래내역</div>
+    </a>
+    <a th:href="@{/ranking}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
+      <div style="font-size:1.3rem;">🏆</div>
+      <div style="font-size:.65rem;">랭킹</div>
     </a>
     <form th:action="@{/auth/logout}" method="post" class="text-center" style="min-width:64px;">
       <button type="submit" class="border-0 bg-transparent text-decoration-none text-center p-0"
