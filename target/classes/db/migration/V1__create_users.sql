@@ -1,8 +1,0 @@
-CREATE TABLE users (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username    VARCHAR(50)     NOT NULL UNIQUE,
-    email       VARCHAR(100)    NOT NULL UNIQUE,
-    password    VARCHAR(255)    NOT NULL,
-    cash_balance DECIMAL(15, 2) NOT NULL DEFAULT 10000000.00,
-    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
