@@ -47,8 +47,12 @@
             <span class="badge bg-secondary me-1" style="font-size:.65rem;" th:text="${t.stock.market}"></span>
             <span th:text="${#numbers.formatInteger(t.price, 1, 'COMMA') + '원 × ' + t.quantity + '주'}"></span>
           </span>
-          <span class="text-white fw-bold"
-                th:text="${#numbers.formatInteger(t.amount, 1, 'COMMA') + '원'}"></span>
+          <div class="text-end">
+            <div class="text-white fw-bold"
+                 th:text="${#numbers.formatInteger(t.amount, 1, 'COMMA') + '원'}"></div>
+            <div class="text-secondary" style="font-size:.7rem;"
+                 th:text="'수수료 ' + ${#numbers.formatInteger(t.fee, 1, 'COMMA') + '원'}"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -64,7 +68,8 @@
             <th>구분</th>
             <th class="text-end">체결가</th>
             <th class="text-end">수량</th>
-            <th class="text-end pe-3">거래금액</th>
+            <th class="text-end">거래금액</th>
+            <th class="text-end pe-3">수수료+세금</th>
           </tr>
         </thead>
         <tbody>
@@ -88,8 +93,10 @@
             <td class="text-end"
                 th:text="${#numbers.formatInteger(t.price, 1, 'COMMA') + '원'}"></td>
             <td class="text-end" th:text="${t.quantity + '주'}"></td>
-            <td class="text-end pe-3 fw-bold"
+            <td class="text-end fw-bold"
                 th:text="${#numbers.formatInteger(t.amount, 1, 'COMMA') + '원'}"></td>
+            <td class="text-end pe-3 text-secondary small"
+                th:text="${#numbers.formatInteger(t.fee, 1, 'COMMA') + '원'}"></td>
           </tr>
         </tbody>
       </table>

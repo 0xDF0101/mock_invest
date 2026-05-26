@@ -40,6 +40,9 @@ public class Trade {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(nullable = false)
+    private BigDecimal fee;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -52,7 +55,7 @@ public class Trade {
         createdAt = LocalDateTime.now();
     }
 
-    public static Trade of(User user, Stock stock, TradeType type, BigDecimal price, int quantity) {
+    public static Trade of(User user, Stock stock, TradeType type, BigDecimal price, int quantity, BigDecimal fee) {
         Trade t = new Trade();
         t.user = user;
         t.stock = stock;
@@ -60,6 +63,7 @@ public class Trade {
         t.price = price;
         t.quantity = quantity;
         t.amount = price.multiply(BigDecimal.valueOf(quantity));
+        t.fee = fee;
         return t;
     }
 }
