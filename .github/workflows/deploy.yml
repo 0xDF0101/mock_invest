@@ -19,6 +19,6 @@ jobs:
             set -e
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin main
-            ./mvnw package -DskipTests
+            ./gradlew bootJar -x test
             docker compose up -d --build
             echo "✅ 배포 완료"
