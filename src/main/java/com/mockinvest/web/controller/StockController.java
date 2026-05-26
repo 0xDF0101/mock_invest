@@ -10,6 +10,7 @@ import com.mockinvest.domain.user.UserService;
 import com.mockinvest.infrastructure.stockprice.CandleDto;
 import com.mockinvest.infrastructure.stockprice.StockPriceDto;
 import com.mockinvest.infrastructure.stockprice.StockPriceProvider;
+import com.mockinvest.infrastructure.stockprice.TickSizeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -71,6 +72,7 @@ public class StockController {
         model.addAttribute("marketStatus", marketHoursService.getStatusLabel());
         model.addAttribute("nextEventMs", marketHoursService.getNextEventMillis());
         model.addAttribute("nextEventOpen", marketHoursService.isNextEventOpen());
+        model.addAttribute("tickSize", TickSizeUtil.tickSize(price.price()));
         return "stock/detail";
     }
 

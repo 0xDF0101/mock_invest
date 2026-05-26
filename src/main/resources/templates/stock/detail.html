@@ -54,6 +54,7 @@
             <div class="small" id="price-change"
                  th:classappend="${price.change() >= 0} ? 'up' : 'down'"
                  th:text="${(price.change() >= 0 ? '+' : '') + #numbers.formatInteger(price.change(), 1, 'COMMA') + '원 (' + #numbers.formatDecimal(price.changePercent(), 1, 2) + '%)'}"></div>
+            <div class="small text-secondary mt-1">호가단위 <span th:text="${#numbers.formatInteger(tickSize, 1, 'COMMA') + '원'}"></span></div>
           </div>
         </div>
 

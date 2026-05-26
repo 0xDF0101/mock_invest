@@ -7,6 +7,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mockinvest.infrastructure.stockprice.CandleDto;
 import com.mockinvest.infrastructure.stockprice.StockPriceDto;
 import com.mockinvest.infrastructure.stockprice.StockPriceProvider;
+import com.mockinvest.infrastructure.stockprice.TickSizeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -72,8 +73,8 @@ public class YahooFinanceProvider implements StockPriceProvider {
             JsonNode meta = objectMapper.readTree(json)
                     .path("chart").path("result").get(0).path("meta");
 
-            BigDecimal price = meta.path("regularMarketPrice").decimalValue();
-            BigDecimal prevClose = meta.path("chartPreviousClose").decimalValue();
+            BigDecimal price = TickSizeUtil.round(meta.path("regularMarketPrice").decimalValue());
+            BigDecimal prevClose = TickSizeUtil.round(meta.path("chartPreviousClose").decimalValue());
             BigDecimal change = price.subtract(prevClose);
             BigDecimal changePercent = prevClose.compareTo(BigDecimal.ZERO) == 0
                     ? BigDecimal.ZERO
