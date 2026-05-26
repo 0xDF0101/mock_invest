@@ -9,8 +9,10 @@ import java.util.Set;
 public class MarketHoursService {
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
-    private static final LocalTime OPEN_TIME  = LocalTime.of(9, 0);
-    private static final LocalTime CLOSE_TIME = LocalTime.of(15, 30);
+    private static final LocalTime OPEN_TIME        = LocalTime.of(9, 0);
+    private static final LocalTime CLOSE_TIME       = LocalTime.of(15, 30);
+    private static final LocalTime AFTER_HOUR_START = LocalTime.of(15, 40);
+    private static final LocalTime AFTER_HOUR_END   = LocalTime.of(18, 0);
 
     /**
      * KRX 공식 휴장일 목록. 고정 공휴일·변동 공휴일(설·추석·부처님오신날)·대체공휴일 포함.
@@ -58,6 +60,18 @@ public class MarketHoursService {
         return isTradingTime(now.toLocalDate(), now.toLocalTime());
     }
 
+    public boolean isAfterHours() {
+        ZonedDateTime now = ZonedDateTime.now(KST);
+        LocalDate date = now.toLocalDate();
+        LocalTime time = now.toLocalTime();
+        if (isWeekend(date.getDayOfWeek()) || HOLIDAYS.contains(date)) return false;
+        return !time.isBefore(AFTER_HOUR_START) && time.isBefore(AFTER_HOUR_END);
+    }
+
+    public boolean isTradeAllowed() {
+        return isOpen() || isAfterHours();
+    }
+
     public String getStatusLabel() {
         ZonedDateTime now = ZonedDateTime.now(KST);
         LocalDate date = now.toLocalDate();
@@ -67,6 +81,8 @@ public class MarketHoursService {
         if (HOLIDAYS.contains(date))        return "공휴일";
         if (time.isBefore(OPEN_TIME))       return "장전";
         if (time.isBefore(CLOSE_TIME))      return "장중";
+        if (time.isBefore(AFTER_HOUR_START)) return "장마감";
+        if (time.isBefore(AFTER_HOUR_END))  return "시간외";
         return "장마감";
     }
 

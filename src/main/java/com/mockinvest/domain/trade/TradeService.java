@@ -60,8 +60,8 @@ public class TradeService {
 
     @Transactional
     public Trade buy(String username, String ticker, int quantity) {
-        if (!marketHoursService.isOpen()) {
-            throw new IllegalStateException("장 운영 시간이 아닙니다. 평일 09:00 ~ 15:30에 거래 가능합니다.");
+        if (!marketHoursService.isTradeAllowed()) {
+            throw new IllegalStateException("거래 가능 시간이 아닙니다. 정규장 09:00~15:30, 시간외 15:40~18:00");
         }
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);
@@ -85,8 +85,8 @@ public class TradeService {
 
     @Transactional
     public Trade sell(String username, String ticker, int quantity) {
-        if (!marketHoursService.isOpen()) {
-            throw new IllegalStateException("장 운영 시간이 아닙니다. 평일 09:00 ~ 15:30에 거래 가능합니다.");
+        if (!marketHoursService.isTradeAllowed()) {
+            throw new IllegalStateException("거래 가능 시간이 아닙니다. 정규장 09:00~15:30, 시간외 15:40~18:00");
         }
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);

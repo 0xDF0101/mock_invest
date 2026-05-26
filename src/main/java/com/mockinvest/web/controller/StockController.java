@@ -68,7 +68,7 @@ public class StockController {
         model.addAttribute("candles", candles);
         model.addAttribute("period", period);
         model.addAttribute("heldQuantity", heldQuantity);
-        model.addAttribute("marketOpen", marketHoursService.isOpen());
+        model.addAttribute("marketOpen", marketHoursService.isTradeAllowed());
         model.addAttribute("marketStatus", marketHoursService.getStatusLabel());
         model.addAttribute("nextEventMs", marketHoursService.getNextEventMillis());
         model.addAttribute("nextEventOpen", marketHoursService.isNextEventOpen());
