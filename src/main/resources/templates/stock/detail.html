@@ -99,17 +99,20 @@
 
       <!-- 모바일: 탭 UI -->
       <div class="card d-lg-none">
-        <div class="d-flex border-bottom border-secondary">
-          <div class="trade-tab active" id="tab-buy" onclick="switchTab('buy')">매수</div>
+        <div class="d-flex border-bottom border-secondary" style="overflow-x:auto;">
+          <div class="trade-tab active" id="tab-buy" onclick="switchTab('buy')">시장가 매수</div>
           <div class="trade-tab" id="tab-sell" onclick="switchTab('sell')"
                th:classappend="${heldQuantity > 0} ? '' : 'd-none'">
-            매도
+            시장가 매도
             <span th:if="${heldQuantity > 0}" class="badge bg-secondary ms-1 small"
                   th:text="${heldQuantity + '주'}"></span>
           </div>
+          <div class="trade-tab" id="tab-limit-buy" onclick="switchTab('limit-buy')">지정가 매수</div>
+          <div class="trade-tab" id="tab-limit-sell" onclick="switchTab('limit-sell')"
+               th:classappend="${heldQuantity > 0} ? '' : 'd-none'">지정가 매도</div>
         </div>
 
-        <!-- 매수 폼 (모바일) -->
+        <!-- 시장가 매수 폼 (모바일) -->
         <div id="panel-buy" class="p-3">
           <form th:action="@{/trade/buy}" method="post">
             <input type="hidden" name="ticker" th:value="${stock.ticker}">
@@ -125,7 +128,7 @@
           </form>
         </div>
 
-        <!-- 매도 폼 (모바일) -->
+        <!-- 시장가 매도 폼 (모바일) -->
         <div id="panel-sell" class="p-3 d-none" th:if="${heldQuantity > 0}">
           <form th:action="@{/trade/sell}" method="post">
             <input type="hidden" name="ticker" th:value="${stock.ticker}">
@@ -141,27 +144,104 @@
             <button type="submit" class="btn btn-danger w-100 fw-bold" th:disabled="${!marketOpen}">매도</button>
           </form>
         </div>
+
+        <!-- 지정가 매수 폼 (모바일) -->
+        <div id="panel-limit-buy" class="p-3 d-none">
+          <form th:action="@{/trade/limit/buy}" method="post">
+            <input type="hidden" name="ticker" th:value="${stock.ticker}">
+            <div class="mb-2">
+              <label class="form-label small text-secondary">지정가 (원)</label>
+              <input type="number" name="limitPrice" class="form-control" min="1" placeholder="매수 희망가격" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">수량 (주)</label>
+              <input type="number" name="quantity" class="form-control" min="1" placeholder="매수 수량" required>
+            </div>
+            <p class="small text-secondary mb-2">현재가 이하 도달 시 자동 체결</p>
+            <button type="submit" class="btn btn-success w-100 fw-bold">지정가 매수 등록</button>
+          </form>
+        </div>
+
+        <!-- 지정가 매도 폼 (모바일) -->
+        <div id="panel-limit-sell" class="p-3 d-none" th:if="${heldQuantity > 0}">
+          <form th:action="@{/trade/limit/sell}" method="post">
+            <input type="hidden" name="ticker" th:value="${stock.ticker}">
+            <div class="mb-2">
+              <label class="form-label small text-secondary">지정가 (원)</label>
+              <input type="number" name="limitPrice" class="form-control" min="1" placeholder="매도 희망가격" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">수량 (주)</label>
+              <input type="number" name="quantity" class="form-control" min="1"
+                     th:max="${heldQuantity}" placeholder="매도 수량" required>
+            </div>
+            <p class="small text-secondary mb-2">현재가 이상 도달 시 자동 체결</p>
+            <button type="submit" class="btn btn-danger w-100 fw-bold">지정가 매도 등록</button>
+          </form>
+        </div>
       </div>
 
-      <!-- 데스크톱: 기존 카드 -->
+      <!-- 데스크톱: 시장가 카드 -->
       <div class="card p-3 mb-3 d-none d-lg-block">
-        <h6 class="text-secondary mb-3">매수</h6>
-        <form th:action="@{/trade/buy}" method="post">
-          <input type="hidden" name="ticker" th:value="${stock.ticker}">
-          <div class="mb-3">
-            <label class="form-label small text-secondary">수량 (주)</label>
-            <input type="number" name="quantity" class="form-control" min="1" placeholder="매수 수량" required>
-          </div>
-          <div class="d-flex justify-content-between text-secondary small mb-3">
-            <span>예상 금액</span>
-            <span id="buy-amount">-</span>
-          </div>
-          <button type="submit" class="btn btn-success w-100 fw-bold" th:disabled="${!marketOpen}">매수</button>
-        </form>
+        <div class="d-flex gap-3 mb-3">
+          <span class="fw-bold" id="dt-tab-market" onclick="switchDtTab('market')" style="cursor:pointer;color:#f0b90b;border-bottom:2px solid #f0b90b;padding-bottom:4px;">시장가</span>
+          <span class="fw-bold text-secondary" id="dt-tab-limit" onclick="switchDtTab('limit')" style="cursor:pointer;padding-bottom:4px;">지정가</span>
+        </div>
+
+        <!-- 데스크톱 시장가 -->
+        <div id="dt-panel-market">
+          <h6 class="text-secondary mb-3">매수</h6>
+          <form th:action="@{/trade/buy}" method="post">
+            <input type="hidden" name="ticker" th:value="${stock.ticker}">
+            <div class="mb-3">
+              <label class="form-label small text-secondary">수량 (주)</label>
+              <input type="number" name="quantity" class="form-control" min="1" placeholder="매수 수량" required>
+            </div>
+            <div class="d-flex justify-content-between text-secondary small mb-3">
+              <span>예상 금액</span>
+              <span id="buy-amount">-</span>
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold" th:disabled="${!marketOpen}">매수</button>
+          </form>
+        </div>
+
+        <!-- 데스크톱 지정가 -->
+        <div id="dt-panel-limit" class="d-none">
+          <h6 class="text-secondary mb-3">지정가 매수</h6>
+          <form th:action="@{/trade/limit/buy}" method="post">
+            <input type="hidden" name="ticker" th:value="${stock.ticker}">
+            <div class="mb-2">
+              <label class="form-label small text-secondary">지정가 (원)</label>
+              <input type="number" name="limitPrice" class="form-control" min="1" placeholder="매수 희망가격" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">수량 (주)</label>
+              <input type="number" name="quantity" class="form-control" min="1" placeholder="수량" required>
+            </div>
+            <p class="small text-secondary mb-2">현재가 이하 도달 시 자동 체결</p>
+            <button type="submit" class="btn btn-success w-100 fw-bold">지정가 매수 등록</button>
+          </form>
+          <hr style="border-color:#2a2d3e;">
+          <h6 class="text-secondary mb-3">지정가 매도</h6>
+          <form th:if="${heldQuantity > 0}" th:action="@{/trade/limit/sell}" method="post">
+            <input type="hidden" name="ticker" th:value="${stock.ticker}">
+            <div class="mb-2">
+              <label class="form-label small text-secondary">지정가 (원)</label>
+              <input type="number" name="limitPrice" class="form-control" min="1" placeholder="매도 희망가격" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-secondary">수량 (주, 보유: <span th:text="${heldQuantity}"></span>주)</label>
+              <input type="number" name="quantity" class="form-control" min="1" th:max="${heldQuantity}" placeholder="수량" required>
+            </div>
+            <p class="small text-secondary mb-2">현재가 이상 도달 시 자동 체결</p>
+            <button type="submit" class="btn btn-danger w-100 fw-bold">지정가 매도 등록</button>
+          </form>
+          <p th:unless="${heldQuantity > 0}" class="small text-secondary">보유 종목 없음</p>
+        </div>
       </div>
 
       <div class="card p-3 d-none d-lg-block" th:if="${heldQuantity > 0}">
-        <h6 class="text-secondary mb-1">매도</h6>
+        <h6 class="text-secondary mb-1">시장가 매도</h6>
         <p class="small text-secondary mb-3">보유수량: <span class="text-white fw-bold" th:text="${heldQuantity + '주'}"></span></p>
         <form th:action="@{/trade/sell}" method="post">
           <input type="hidden" name="ticker" th:value="${stock.ticker}">
@@ -176,6 +256,10 @@
           </div>
           <button type="submit" class="btn btn-danger w-100 fw-bold" th:disabled="${!marketOpen}">매도</button>
         </form>
+      </div>
+
+      <div class="mt-2 text-end">
+        <a href="/trade/orders" class="small text-secondary">지정가 주문 내역 →</a>
       </div>
     </div>
 
@@ -289,12 +373,27 @@
   document.querySelectorAll('input[name=quantity]').forEach(el => el.addEventListener('input', updateAmounts));
 
   // 모바일 탭 전환
+  const mobileTabs = ['buy', 'sell', 'limit-buy', 'limit-sell'];
   function switchTab(tab) {
-    document.getElementById('panel-buy').classList.toggle('d-none', tab !== 'buy');
-    const sellPanel = document.getElementById('panel-sell');
-    if (sellPanel) sellPanel.classList.toggle('d-none', tab !== 'sell');
-    document.getElementById('tab-buy').classList.toggle('active', tab === 'buy');
-    document.getElementById('tab-sell').classList.toggle('active', tab === 'sell');
+    mobileTabs.forEach(t => {
+      const panel = document.getElementById('panel-' + t);
+      const tabEl = document.getElementById('tab-' + t);
+      if (panel) panel.classList.toggle('d-none', t !== tab);
+      if (tabEl) tabEl.classList.toggle('active', t === tab);
+    });
+  }
+
+  // 데스크톱 시장가/지정가 탭 전환
+  function switchDtTab(tab) {
+    const isMarket = tab === 'market';
+    document.getElementById('dt-panel-market').classList.toggle('d-none', !isMarket);
+    document.getElementById('dt-panel-limit').classList.toggle('d-none', isMarket);
+    const mEl = document.getElementById('dt-tab-market');
+    const lEl = document.getElementById('dt-tab-limit');
+    mEl.style.color = isMarket ? '#f0b90b' : '#9da5ae';
+    mEl.style.borderBottom = isMarket ? '2px solid #f0b90b' : 'none';
+    lEl.style.color = isMarket ? '#9da5ae' : '#f0b90b';
+    lEl.style.borderBottom = isMarket ? 'none' : '2px solid #f0b90b';
   }
 
   window.addEventListener('resize', () => {
