@@ -15,6 +15,9 @@ import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +64,34 @@ public class YahooFinanceProvider implements StockPriceProvider {
     @Override
     public List<CandleDto> getHistory(String ticker, String period) {
         return historyCache.get(ticker + ":" + period, k -> fetchHistory(ticker, period));
+    }
+
+    @Override
+    public BigDecimal getDividendToday(String ticker) {
+        try {
+            String json = yahooRestClient.get()
+                    .uri("/v8/finance/chart/{ticker}?interval=1d&range=7d&events=div", ticker)
+                    .retrieve()
+                    .body(String.class);
+
+            JsonNode dividends = objectMapper.readTree(json)
+                    .path("chart").path("result").get(0)
+                    .path("events").path("dividends");
+
+            if (dividends.isMissingNode() || dividends.isEmpty()) return BigDecimal.ZERO;
+
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+            for (JsonNode div : dividends) {
+                LocalDate divDate = Instant.ofEpochSecond(div.path("date").longValue())
+                        .atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+                if (divDate.equals(today)) {
+                    return div.path("amount").decimalValue();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("배당금 조회 실패: {}", ticker, e);
+        }
+        return BigDecimal.ZERO;
     }
 
     private StockPriceDto fetchPrice(String ticker) {
