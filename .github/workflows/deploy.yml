@@ -25,6 +25,11 @@ jobs:
             export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin main
-            ./mvnw clean package -DskipTests -q
+            docker run --rm \
+              -v mock-invest-m2:/root/.m2 \
+              -v "$(pwd)":/app \
+              -w /app \
+              maven:3.9-eclipse-temurin-21-alpine \
+              mvn clean package -DskipTests -q
             docker compose up -d --build
             echo "✅ 배포 완료"
