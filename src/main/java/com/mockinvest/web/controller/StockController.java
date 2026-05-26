@@ -73,6 +73,10 @@ public class StockController {
         model.addAttribute("nextEventMs", marketHoursService.getNextEventMillis());
         model.addAttribute("nextEventOpen", marketHoursService.isNextEventOpen());
         model.addAttribute("tickSize", TickSizeUtil.tickSize(price.price()));
+        if (price.prevClose().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            model.addAttribute("upperLimit", TickSizeUtil.round(price.prevClose().multiply(new java.math.BigDecimal("1.30"))));
+            model.addAttribute("lowerLimit", TickSizeUtil.round(price.prevClose().multiply(new java.math.BigDecimal("0.70"))));
+        }
         return "stock/detail";
     }
 

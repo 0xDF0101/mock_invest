@@ -2,6 +2,7 @@ package com.mockinvest.domain.trade;
 
 import com.mockinvest.domain.market.MarketHoursService;
 import com.mockinvest.domain.portfolio.Holding;
+import com.mockinvest.infrastructure.stockprice.TickSizeUtil;
 import com.mockinvest.domain.portfolio.HoldingRepository;
 import com.mockinvest.domain.stock.Stock;
 import com.mockinvest.domain.stock.StockService;
@@ -25,6 +26,21 @@ public class TradeService {
 
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.00015"); // 0.015%
     private static final BigDecimal TAX_RATE        = new BigDecimal("0.0018");  // 0.18% 증권거래세 (매도만)
+
+    private static final BigDecimal UPPER_LIMIT_RATE = new BigDecimal("1.30");
+    private static final BigDecimal LOWER_LIMIT_RATE = new BigDecimal("0.70");
+
+    private void validatePriceLimit(BigDecimal currentPrice, BigDecimal prevClose) {
+        if (prevClose.compareTo(BigDecimal.ZERO) == 0) return;
+        BigDecimal upper = TickSizeUtil.round(prevClose.multiply(UPPER_LIMIT_RATE));
+        BigDecimal lower = TickSizeUtil.round(prevClose.multiply(LOWER_LIMIT_RATE));
+        if (currentPrice.compareTo(upper) > 0) {
+            throw new IllegalStateException("상한가(" + upper.toPlainString() + "원)를 초과한 가격으로 거래할 수 없습니다.");
+        }
+        if (currentPrice.compareTo(lower) < 0) {
+            throw new IllegalStateException("하한가(" + lower.toPlainString() + "원) 미만 가격으로 거래할 수 없습니다.");
+        }
+    }
 
     private BigDecimal calcFee(BigDecimal amount, Trade.TradeType type) {
         BigDecimal commission = amount.multiply(COMMISSION_RATE).setScale(0, RoundingMode.UP);
@@ -50,7 +66,9 @@ public class TradeService {
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);
 
-        BigDecimal currentPrice = stockPriceProvider.getPrice(ticker).price();
+        var priceDto = stockPriceProvider.getPrice(ticker);
+        BigDecimal currentPrice = priceDto.price();
+        validatePriceLimit(currentPrice, priceDto.prevClose());
         BigDecimal amount = currentPrice.multiply(BigDecimal.valueOf(quantity));
         BigDecimal fee = calcFee(amount, Trade.TradeType.BUY);
 
@@ -73,7 +91,9 @@ public class TradeService {
         User user = userService.getByUsername(username);
         Stock stock = stockService.getByTicker(ticker);
 
-        BigDecimal currentPrice = stockPriceProvider.getPrice(ticker).price();
+        var priceDto = stockPriceProvider.getPrice(ticker);
+        BigDecimal currentPrice = priceDto.price();
+        validatePriceLimit(currentPrice, priceDto.prevClose());
         BigDecimal amount = currentPrice.multiply(BigDecimal.valueOf(quantity));
         BigDecimal fee = calcFee(amount, Trade.TradeType.SELL);
 

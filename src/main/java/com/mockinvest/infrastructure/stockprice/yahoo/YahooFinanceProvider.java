@@ -80,10 +80,10 @@ public class YahooFinanceProvider implements StockPriceProvider {
                     ? BigDecimal.ZERO
                     : change.divide(prevClose, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
 
-            return new StockPriceDto(ticker, price, change, changePercent);
+            return new StockPriceDto(ticker, price, change, changePercent, prevClose);
         } catch (Exception e) {
             log.warn("주가 조회 실패: {}", ticker, e);
-            return new StockPriceDto(ticker, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+            return new StockPriceDto(ticker, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         }
     }
 

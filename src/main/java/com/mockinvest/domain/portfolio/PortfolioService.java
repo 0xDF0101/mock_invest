@@ -43,7 +43,7 @@ public class PortfolioService {
                 .map(h -> {
                     StockPriceDto price = prices.getOrDefault(
                             h.getStock().getTicker(),
-                            new StockPriceDto(h.getStock().getTicker(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                            new StockPriceDto(h.getStock().getTicker(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
                     );
                     BigDecimal evalAmount = price.price().multiply(BigDecimal.valueOf(h.getQuantity()));
                     BigDecimal returnRate = h.getAvgBuyPrice().compareTo(BigDecimal.ZERO) == 0

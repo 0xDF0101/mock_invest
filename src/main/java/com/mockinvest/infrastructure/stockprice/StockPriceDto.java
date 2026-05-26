@@ -6,5 +6,6 @@ public record StockPriceDto(
         String ticker,
         BigDecimal price,
         BigDecimal change,
-        BigDecimal changePercent
+        BigDecimal changePercent,
+        BigDecimal prevClose
 ) {}
