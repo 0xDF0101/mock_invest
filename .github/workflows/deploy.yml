@@ -12,27 +12,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build JAR
-        run: mvn clean package -DskipTests -q
-
-      - name: Copy JAR to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "target/*.jar"
-          target: ${{ secrets.DEPLOY_PATH }}
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -40,10 +19,12 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          command_timeout: 15m
+          command_timeout: 30m
           script: |
             set -e
             export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+            export DOCKER_HOST="unix:///Users/server-admin/.colima/default/docker.sock"
             cd ${{ secrets.DEPLOY_PATH }}
+            git pull origin main
             docker compose up -d --build
             echo "✅ 배포 완료"
