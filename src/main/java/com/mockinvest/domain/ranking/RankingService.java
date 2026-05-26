@@ -63,7 +63,7 @@ public class RankingService {
             BigDecimal evalAmount = holdings.stream()
                     .map(h -> prices.getOrDefault(
                             h.getStock().getTicker(),
-                            new StockPriceDto(h.getStock().getTicker(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                            new StockPriceDto(h.getStock().getTicker(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
                     ).price().multiply(BigDecimal.valueOf(h.getQuantity())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
