@@ -116,6 +116,15 @@
     </div>
   </div>
 
+  <!-- 수익률 시계열 차트 -->
+  <div th:if="${!#lists.isEmpty(snapshotDates)}" class="card p-3 mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="small" style="color:#aaa;">수익률 추이</span>
+      <span class="small text-secondary" th:text="${#lists.size(snapshotDates)} + '일'"></span>
+    </div>
+    <canvas id="return-chart" style="width:100%;height:120px;"></canvas>
+  </div>
+
   <!-- 보유 종목 없음 -->
   <div th:if="${portfolio.holdings().isEmpty()}" class="card p-5 text-center">
     <p style="color:#aaa;">보유 중인 종목이 없습니다.</p>
@@ -301,6 +310,71 @@
     ctx.lineJoin = 'round';
     ctx.stroke();
   }
+
+  // ── 수익률 시계열 차트 ─────────────────────────────
+  (function() {
+    const canvas = document.getElementById('return-chart');
+    if (!canvas) return;
+    const dates  = /*[[${snapshotDates}]]*/ [];
+    const assets = /*[[${snapshotAssets}]]*/ [];
+    if (assets.length < 2) return;
+
+    const INITIAL = 10000000;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width  = canvas.offsetWidth  * dpr;
+    canvas.height = canvas.offsetHeight * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    const pad = { t: 8, r: 8, b: 24, l: 60 };
+    const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+
+    const min = Math.min(...assets, INITIAL) * 0.995;
+    const max = Math.max(...assets, INITIAL) * 1.005;
+    const xOf = i => pad.l + (i / (assets.length - 1)) * cw;
+    const yOf = v => pad.t + ch - ((v - min) / (max - min)) * ch;
+
+    // 기준선 (초기자본)
+    const baseY = yOf(INITIAL);
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = '#3a3d50';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, baseY); ctx.lineTo(pad.l + cw, baseY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 그라데이션 채우기
+    const lastAbove = assets[assets.length - 1] >= INITIAL;
+    const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ch);
+    grad.addColorStop(0, lastAbove ? 'rgba(38,166,154,.35)' : 'rgba(239,83,80,.35)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    assets.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+    ctx.lineTo(xOf(assets.length - 1), pad.t + ch);
+    ctx.lineTo(xOf(0), pad.t + ch);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 선
+    ctx.beginPath();
+    assets.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+    ctx.strokeStyle = lastAbove ? '#26a69a' : '#ef5350';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    // Y축 레이블 (초기자본 기준선)
+    ctx.fillStyle = '#666';
+    ctx.font = `${10 * dpr / dpr}px sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText('1,000만', pad.l - 4, baseY + 4);
+
+    // X축 첫/마지막 날짜
+    ctx.textAlign = 'left';
+    ctx.fillText(dates[0]?.slice(5) ?? '', pad.l, H - 4);
+    ctx.textAlign = 'right';
+    ctx.fillText(dates[dates.length - 1]?.slice(5) ?? '', pad.l + cw, H - 4);
+  })();
 
   document.querySelectorAll('.spark-canvas').forEach(canvas => {
     canvas.classList.add('spark-shimmer');
