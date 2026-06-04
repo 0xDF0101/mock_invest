@@ -4,6 +4,7 @@ import com.mockinvest.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,14 +28,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/css/**", "/js/**", "/api/stocks/**", "/h2-console/**").permitAll()
+                .requestMatchers("/auth/**", "/css/**", "/js/**", "/api/stocks/**", "/h2-console/**", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/auth/login")
                 .loginProcessingUrl("/auth/login")
                 .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/auth/login?error")
+                .failureHandler((request, response, exception) -> {
+                    String url = (exception instanceof DisabledException)
+                            ? "/auth/login?disabled"
+                            : "/auth/login?error";
+                    response.sendRedirect(url);
+                })
                 .permitAll()
             )
             .logout(logout -> logout

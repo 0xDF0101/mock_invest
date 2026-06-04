@@ -22,8 +22,13 @@
   </div>
 
   <div th:if="${param.error}" class="alert alert-danger py-2 small">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+  <div th:if="${param.disabled}" class="alert alert-warning py-2 small">
+    이메일 인증이 완료되지 않았습니다.
+    <a th:href="@{/auth/resend-verification}" class="alert-link">인증 이메일 재발송</a>
+  </div>
   <div th:if="${param.logout}" class="alert alert-info py-2 small">로그아웃 되었습니다.</div>
   <div th:if="${successMessage}" class="alert alert-success py-2 small" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
 
   <form th:action="@{/auth/login}" method="post">
     <div class="mb-3">
@@ -38,9 +43,13 @@
   </form>
 
   <hr class="border-secondary my-3">
-  <p class="text-center text-secondary small mb-0">
+  <p class="text-center text-secondary small mb-1">
     계정이 없으신가요?
     <a th:href="@{/auth/register}" class="text-warning text-decoration-none">회원가입</a>
+  </p>
+  <p class="text-center text-secondary small mb-0">
+    비밀번호를 잊으셨나요?
+    <a th:href="@{/auth/forgot-password}" class="text-warning text-decoration-none">비밀번호 찾기</a>
   </p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

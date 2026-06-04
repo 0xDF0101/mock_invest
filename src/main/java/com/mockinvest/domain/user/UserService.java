@@ -1,5 +1,6 @@
 package com.mockinvest.domain.user;
 
+import com.mockinvest.infrastructure.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,12 +9,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public User register(String username, String email, String rawPassword) {
@@ -23,7 +27,29 @@ public class UserService implements UserDetailsService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
-        return userRepository.save(User.create(username, email, passwordEncoder.encode(rawPassword)));
+        String token = UUID.randomUUID().toString();
+        User user = userRepository.save(
+                User.create(username, email, passwordEncoder.encode(rawPassword), token));
+        emailService.sendVerification(email, token);
+        return user;
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        User user = userRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 인증 링크입니다."));
+        user.verify();
+    }
+
+    @Transactional
+    public void resendVerification(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (!user.isEmailVerified()) {
+                String token = UUID.randomUUID().toString();
+                user.renewVerificationToken(token);
+                emailService.sendVerification(email, token);
+            }
+        });
     }
 
     @Transactional(readOnly = true)
@@ -39,6 +65,7 @@ public class UserService implements UserDetailsService {
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .roles("USER")
+                .disabled(!user.isEmailVerified())
                 .build();
     }
 }
