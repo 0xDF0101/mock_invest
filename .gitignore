@@ -48,3 +48,4 @@ target/
 ### OS ###
 .DS_Store
 Thumbs.db
+app.jar
