@@ -16,7 +16,8 @@ services:
     restart: always
 
   app:
-    build: .
+#    build: . # ---> 빌드하는게 아니라 ghcr.io에서 이미지를 다운받아 run만 할거라서 필요 없음
+    image: ghcr.io/0xdf0101/mock_invest:latest # 이미지 이름은 소문자만 가능하다!
     environment:
       DB_HOST: db
       DB_USER: ${DB_USER}

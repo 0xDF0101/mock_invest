@@ -24,15 +24,22 @@ jobs:
       - name: Build JAR
         run: mvn package -DskipTests -q && cp target/*.jar app.jar
 
-      - name: SCP JAR to server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "app.jar"
-          target: ${{ secrets.DEPLOY_PATH }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # 이건 github 측에서 자동으로 생성해줌
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/0xdf0101/mock_invest:latest
+
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -46,7 +53,11 @@ jobs:
             set -e
             export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
             export DOCKER_HOST="unix:///Users/server-admin/.colima/default/docker.sock"
+            # 이전 배포 프로세스 잔재 정리
+            pkill -f "docker compose" || true
+            sleep 2
             cd ${{ secrets.DEPLOY_PATH }}
             git pull origin main
-            docker compose up -d --build
+            docker compose pull
+            docker compose up -d
             echo "✅ 배포 완료"
