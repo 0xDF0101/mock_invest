@@ -1,5 +1,6 @@
 package com.mockinvest.domain.user;
 
+import com.mockinvest.domain.portfolio.PortfolioSnapshotService;
 import com.mockinvest.infrastructure.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final PortfolioSnapshotService portfolioSnapshotService;
 
     @Transactional
     public User register(String username, String email, String rawPassword) {
@@ -31,6 +33,7 @@ public class UserService implements UserDetailsService {
         User user = userRepository.save(
                 User.create(username, email, passwordEncoder.encode(rawPassword), token));
         emailService.sendVerification(email, token);
+        portfolioSnapshotService.createInitialSnapshot(user);
         return user;
     }
 
