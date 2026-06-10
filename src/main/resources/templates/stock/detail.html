@@ -39,7 +39,17 @@
         <!-- 종목 헤더 -->
         <div class="d-flex align-items-start gap-2 mb-3 flex-wrap">
           <div class="flex-grow-1">
-            <h5 class="mb-0 fw-bold" th:text="${stock.name}"></h5>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h5 class="mb-0 fw-bold" th:text="${stock.name}"></h5>
+              <form th:action="@{/watchlist/toggle}" method="post" class="d-inline mb-0">
+                <input type="hidden" name="ticker" th:value="${stock.ticker}">
+                <input type="hidden" name="redirect" th:value="@{/stocks/{t}(t=${stock.ticker})}">
+                <button type="submit" class="border-0 bg-transparent p-0 lh-1"
+                        style="font-size:1.3rem; color:#f0b90b; cursor:pointer;"
+                        th:title="${isWatched} ? '관심 종목 해제' : '관심 종목 추가'"
+                        th:text="${isWatched} ? '★' : '☆'"></button>
+              </form>
+            </div>
             <span class="text-secondary small" th:text="${stock.ticker}"></span>
             <span class="badge ms-1"
                   th:classappend="${stock.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
