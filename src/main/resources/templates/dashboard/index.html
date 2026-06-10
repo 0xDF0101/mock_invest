@@ -332,19 +332,22 @@
 
   // ── 수익률 시계열 차트 ─────────────────────────────
   (function() {
-    const canvas = document.getElementById('return-chart');
-    if (!canvas) return;
     const dates  = /*[[${snapshotDates}]]*/ [];
     const assets = /*[[${snapshotAssets}]]*/ [];
     if (assets.length < 2) return;
 
+    requestAnimationFrame(function() {
+    const canvas = document.getElementById('return-chart');
+    if (!canvas) return;
+
     const INITIAL = 10000000;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width  = canvas.offsetWidth  * dpr;
-    canvas.height = canvas.offsetHeight * dpr;
+    const W = canvas.clientWidth || canvas.parentElement.clientWidth || 400;
+    const H = 120;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
     const pad = { t: 8, r: 8, b: 24, l: 60 };
     const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
 
@@ -394,6 +397,7 @@
     ctx.fillText(dates[0]?.slice(5) ?? '', pad.l, H - 4);
     ctx.textAlign = 'right';
     ctx.fillText(dates[dates.length - 1]?.slice(5) ?? '', pad.l + cw, H - 4);
+    }); // requestAnimationFrame
   })();
 
   document.querySelectorAll('.spark-canvas').forEach(canvas => {
