@@ -11,7 +11,9 @@ import com.mockinvest.infrastructure.stockprice.StockPriceProvider;
 import com.mockinvest.infrastructure.stockprice.TickSizeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class LimitOrderService {
+
+    @Lazy
+    @Autowired
+    private LimitOrderService self;
 
     private static final BigDecimal COMMISSION_RATE = new BigDecimal("0.00015");
     private static final BigDecimal TAX_RATE        = new BigDecimal("0.0018");
@@ -96,9 +102,9 @@ public class LimitOrderService {
             try {
                 BigDecimal currentPrice = stockPriceProvider.getPrice(order.getStock().getTicker()).price();
                 if (order.getType() == Trade.TradeType.BUY && currentPrice.compareTo(order.getLimitPrice()) <= 0) {
-                    fillBuy(order, currentPrice);
+                    self.fillBuy(order, currentPrice);
                 } else if (order.getType() == Trade.TradeType.SELL && currentPrice.compareTo(order.getLimitPrice()) >= 0) {
-                    fillSell(order, currentPrice);
+                    self.fillSell(order, currentPrice);
                 }
             } catch (Exception e) {
                 log.warn("지정가 주문 체결 처리 실패: orderId={}", order.getId(), e);
@@ -107,7 +113,7 @@ public class LimitOrderService {
     }
 
     @Transactional
-    protected void fillBuy(LimitOrder order, BigDecimal fillPrice) {
+    public void fillBuy(LimitOrder order, BigDecimal fillPrice) {
         BigDecimal amount = fillPrice.multiply(BigDecimal.valueOf(order.getQuantity()));
         BigDecimal fee = amount.multiply(COMMISSION_RATE).setScale(0, RoundingMode.UP);
         BigDecimal actualCost = amount.add(fee);
@@ -127,7 +133,7 @@ public class LimitOrderService {
     }
 
     @Transactional
-    protected void fillSell(LimitOrder order, BigDecimal fillPrice) {
+    public void fillSell(LimitOrder order, BigDecimal fillPrice) {
         Holding holding = holdingRepository.findByUserIdAndStockId(order.getUser().getId(), order.getStock().getId())
                 .orElseThrow(() -> new IllegalStateException("보유 종목 없음"));
         if (holding.getQuantity() < order.getQuantity()) {
