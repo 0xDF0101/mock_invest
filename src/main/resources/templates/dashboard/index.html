@@ -353,6 +353,10 @@
 
     const min = Math.min(...assets, INITIAL) * 0.995;
     const max = Math.max(...assets, INITIAL) * 1.005;
+
+    console.log('[chart] W='+W+' H='+H+' dpr='+dpr+' assets='+assets.length+' [0]='+assets[0]+' last='+assets[assets.length-1]+' min='+min+' max='+max+' cw='+cw);
+    ctx.fillStyle = 'rgba(255,0,0,0.3)';
+    ctx.fillRect(pad.l, pad.t, cw, ch);
     const xOf = i => pad.l + (i / (assets.length - 1)) * cw;
     const yOf = v => pad.t + ch - ((v - min) / (max - min)) * ch;
 
