@@ -1,0 +1,75 @@
+/* ── 라이트 테마 (기본) ── */
+:root {
+  --bg-body:      #f5f6fa;
+  --bg-card:      #ffffff;
+  --bg-input:     #ffffff;
+  --bg-hover:     #f0f4ff;
+  --bg-alt:       #f0f2f7;
+  --border:       #e2e5eb;
+  --c-text:       #1a1a2e;
+  --c-secondary:  #6c757d;
+  --c-emphasis:   #495057;
+  --c-cash:       #0d6efd;
+  --navbar-bg:    #ffffff;
+  --navbar-border:#e2e5eb;
+  --bottomnav-bg: #ffffff;
+}
+
+/* ── 다크 테마 ── */
+[data-theme="dark"] {
+  --bg-body:      #0f1117;
+  --bg-card:      #1a1d2e;
+  --bg-input:     #1e2235;
+  --bg-hover:     #232640;
+  --bg-alt:       #2a2d3e;
+  --border:       #2a2d3e;
+  --c-text:       #e0e0e0;
+  --c-secondary:  #aaaaaa;
+  --c-emphasis:   #cccccc;
+  --c-cash:       #58c4dc;
+  --navbar-bg:    #12151f;
+  --navbar-border:#2a2d3e;
+  --bottomnav-bg: #12151f;
+}
+
+/* ── 공통 오버라이드 ── */
+body { background: var(--bg-body) !important; color: var(--c-text) !important; }
+
+.card { background: var(--bg-card) !important; border-color: var(--border) !important; }
+
+.navbar {
+  background: var(--navbar-bg) !important;
+  border-bottom: 1px solid var(--navbar-border) !important;
+}
+.navbar-brand, .nav-link { color: var(--c-text) !important; }
+.nav-link:hover { color: var(--c-cash) !important; }
+
+.form-control {
+  background: var(--bg-input) !important;
+  border-color: var(--border) !important;
+  color: var(--c-text) !important;
+}
+.form-control:focus {
+  background: var(--bg-input) !important;
+  color: var(--c-text) !important;
+}
+
+.table { color: var(--c-text) !important; }
+.table-hover tbody tr:hover { background-color: var(--bg-hover) !important; color: var(--c-text) !important; }
+thead th { color: var(--c-emphasis) !important; }
+
+/* 모바일 하단 nav */
+.fixed-bottom.bg-white { background: var(--bottomnav-bg) !important; border-color: var(--border) !important; }
+
+/* 토글 버튼 */
+#theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--c-text);
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: .85rem;
+  transition: border-color .15s;
+}
+#theme-toggle:hover { border-color: #f0b90b; }

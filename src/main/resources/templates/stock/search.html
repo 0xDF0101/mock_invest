@@ -4,21 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>종목 검색 - MockInvest</title>
+  <script th:replace="~{fragments/navbar :: theme-init}"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/theme.css">
   <style>
-    body { background: #f5f6fa; color: #1a1a2e; }
-    .card { background: #ffffff; border: 1px solid #e2e5eb; color: #1a1a2e; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .form-control { background: #ffffff; border-color: #dee2e6; color: #1a1a2e; }
-    .form-control:focus { background: #ffffff; color: #1a1a2e; border-color: #f0b90b; box-shadow: 0 0 0 0.2rem rgba(240,185,11,.15); }
+    body { background: var(--bg-body); color: var(--c-text); }
+    .card { background: var(--bg-card); border: 1px solid var(--border); color: var(--c-text); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .form-control { background: var(--bg-input); border-color: var(--border); color: var(--c-text); }
+    .form-control:focus { background: var(--bg-input); color: var(--c-text); border-color: #f0b90b; box-shadow: 0 0 0 0.2rem rgba(240,185,11,.15); }
     .form-control::placeholder { color: #adb5bd; }
-    .table { color: #1a1a2e; }
-    .table-hover tbody tr:hover { background-color: #f0f4ff; color: #1a1a2e; cursor: pointer; }
-    thead th { color: #495057; font-weight: 500; }
+    .table { color: var(--c-text); }
+    .table-hover tbody tr:hover { background-color: var(--bg-hover); color: var(--c-text); cursor: pointer; }
+    thead th { color: var(--c-emphasis); font-weight: 500; }
     a { color: #f0b90b; text-decoration: none; }
     a:hover { color: #ffd234; }
     .up { color: #16a34a; } .down { color: #dc3545; }
     .stock-card {
-      background: #ffffff; border: 1px solid #e2e5eb;
+      background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 8px; padding: .75rem;
       cursor: pointer; transition: border-color .15s;
       box-shadow: 0 1px 4px rgba(0,0,0,.06);
@@ -26,10 +28,10 @@
     .stock-card:hover { border-color: #f0b90b; }
     .spark-canvas { width: 100%; height: 65px; display: block; }
     .section-label {
-      font-size: .75rem; color: #6c757d; letter-spacing: .08em;
+      font-size: .75rem; color: var(--c-secondary); letter-spacing: .08em;
       text-transform: uppercase; margin-bottom: .6rem;
     }
-    .clickable-row:active { background-color: #f0f4ff; }
+    .clickable-row:active { background-color: var(--bg-hover); }
   </style>
 </head>
 <body>
@@ -44,12 +46,12 @@
              th:value="${q}" placeholder="종목명 검색 (예: 삼성전자, 카카오, Samsung)" autofocus>
       <button class="btn btn-warning text-dark fw-bold px-3" type="submit">검색</button>
     </div>
-    <div class="mt-1" style="font-size:.75rem; color:#6c757d;">한글/영문 모두 지원 · 예: 삼성전자, SK하이닉스, 카카오, Samsung, Kakao</div>
+    <div class="mt-1" style="font-size:.75rem; color:var(--c-secondary);">한글/영문 모두 지원 · 예: 삼성전자, SK하이닉스, 카카오, Samsung, Kakao</div>
   </form>
 
   <!-- ── 검색 결과 ── -->
   <div th:if="${results != null}">
-    <div th:if="${results.isEmpty()}" class="text-center py-5" style="color:#6c757d;">
+    <div th:if="${results.isEmpty()}" class="text-center py-5" style="color:var(--c-secondary);">
       검색 결과가 없습니다.
     </div>
 
@@ -61,10 +63,10 @@
           <div th:each="s : ${results}"
                th:data-href="@{/stocks/{ticker}(ticker=${s.ticker})}"
                class="clickable-row d-flex align-items-center justify-content-between px-3 py-3"
-               style="border-bottom: 1px solid #dee2e6; cursor:pointer;">
+               style="border-bottom: 1px solid var(--border); cursor:pointer;">
             <div>
               <div class="fw-bold" th:text="${s.name}"></div>
-              <div style="font-size:.75rem; color:#6c757d;" th:text="${s.ticker}"></div>
+              <div style="font-size:.75rem; color:var(--c-secondary);" th:text="${s.ticker}"></div>
             </div>
             <span class="badge"
                   th:classappend="${s.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
@@ -85,7 +87,7 @@
                 th:data-href="@{/stocks/{ticker}(ticker=${s.ticker})}"
                 class="clickable-row" style="cursor:pointer;">
               <td class="ps-3 fw-bold" th:text="${s.name}"></td>
-              <td style="color:#6c757d; font-size:.85rem;" th:text="${s.ticker}"></td>
+              <td style="color:var(--c-secondary); font-size:.85rem;" th:text="${s.ticker}"></td>
               <td>
                 <span class="badge"
                       th:classappend="${s.market.name() == 'KOSPI'} ? 'bg-primary' : 'bg-success'"
@@ -110,7 +112,7 @@
         <!-- JS로 렌더링 -->
         <div class="col-12 text-center py-4" id="kospi-loading">
           <div class="spinner-border spinner-border-sm text-warning" role="status" style="width:1.1rem;height:1.1rem;"></div>
-          <span class="ms-2" style="color:#6c757d; font-size:.85rem;">종목 불러오는 중...</span>
+          <span class="ms-2" style="color:var(--c-secondary); font-size:.85rem;">종목 불러오는 중...</span>
         </div>
       </div>
     </div>
@@ -123,7 +125,7 @@
       <div class="row g-2" id="kosdaq-grid">
         <div class="col-12 text-center py-4" id="kosdaq-loading">
           <div class="spinner-border spinner-border-sm text-warning" role="status" style="width:1.1rem;height:1.1rem;"></div>
-          <span class="ms-2" style="color:#6c757d; font-size:.85rem;">종목 불러오는 중...</span>
+          <span class="ms-2" style="color:var(--c-secondary); font-size:.85rem;">종목 불러오는 중...</span>
         </div>
       </div>
     </div>
@@ -201,11 +203,11 @@
           <div class="d-flex justify-content-between align-items-start mb-1">
             <div style="min-width:0;">
               <div class="fw-bold text-truncate" style="font-size:.85rem;">${escHtml(s.name)}</div>
-              <div style="font-size:.7rem; color:#6c757d;">${escHtml(s.ticker)}</div>
+              <div style="font-size:.7rem; color:var(--c-secondary);">${escHtml(s.ticker)}</div>
             </div>
             <span class="badge ${mktClass} ms-1 flex-shrink-0" style="font-size:.6rem;">${s.market}</span>
           </div>
-          <canvas id="${id}" class="spark-canvas rounded" style="background:#f8f9fa;"></canvas>
+          <canvas id="${id}" class="spark-canvas rounded" style="background:var(--bg-alt);"></canvas>
           <div class="mt-1 d-flex justify-content-between align-items-baseline">
             <span class="fw-bold" style="font-size:.88rem;">${price}원</span>
             <span class="small ${colClass}">${chPct}</span>
@@ -229,7 +231,7 @@
         document.getElementById('kosdaq-loading')?.remove();
 
         if (kospi.length === 0) {
-          kospiGrid.innerHTML = '<div class="col-12"><p style="color:#6c757d;font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
+          kospiGrid.innerHTML = '<div class="col-12"><p style="color:var(--c-secondary);font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
         } else {
           kospiGrid.innerHTML = kospi.map((s, i) => renderStockCard(s, `spark-k-${i}`)).join('');
           // 응답에 포함된 캔들로 즉시 렌더링 (추가 fetch 없음)
@@ -240,7 +242,7 @@
         }
 
         if (kosdaq.length === 0) {
-          kosdaqGrid.innerHTML = '<div class="col-12"><p style="color:#6c757d;font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
+          kosdaqGrid.innerHTML = '<div class="col-12"><p style="color:var(--c-secondary);font-size:.85rem;">종목을 먼저 검색하면 이 곳에 추천 종목이 표시됩니다.</p></div>';
         } else {
           kosdaqGrid.innerHTML = kosdaq.map((s, i) => renderStockCard(s, `spark-q-${i}`)).join('');
           kosdaq.forEach((s, i) => {
