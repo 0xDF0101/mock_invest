@@ -7,14 +7,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
   <style>
-    body { background: #0f1117; color: #e0e0e0; }
-    .card { background: #1a1d2e; border: 1px solid #2a2d3e; }
-    .form-control { background: #0f1117; border-color: #2a2d3e; color: #e0e0e0; }
-    .form-control:focus { background: #0f1117; color: #e0e0e0; border-color: #f0b90b; box-shadow: 0 0 0 0.2rem rgba(240,185,11,.15); }
-    .text-secondary { color: #9da5ae !important; }
-    .up { color: #26a69a; } .down { color: #ef5350; }
+    body { background: #f5f6fa; color: #1a1a2e; }
+    .card { background: #ffffff; border: 1px solid #e2e5eb; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .form-control { background: #ffffff; border-color: #dee2e6; color: #1a1a2e; }
+    .form-control:focus { background: #ffffff; color: #1a1a2e; border-color: #f0b90b; box-shadow: 0 0 0 0.2rem rgba(240,185,11,.15); }
+    .up { color: #16a34a; } .down { color: #dc3545; }
     .period-btn {
-      border: 1px solid #2a2d3e; background: transparent; color: #bbb;
+      border: 1px solid #dee2e6; background: #ffffff; color: #495057;
       padding: 4px 14px; border-radius: 4px; cursor: pointer; font-size: .8rem;
     }
     .period-btn.active, .period-btn:hover { background: #f0b90b; color: #000; border-color: #f0b90b; }
@@ -22,8 +21,8 @@
     @media (max-width: 576px) { #chart { height: 240px; } }
     a { color: #f0b90b; text-decoration: none; }
     /* 매수/매도 탭 (모바일) */
-    .trade-tab { cursor: pointer; padding: .5rem 1rem; border-bottom: 2px solid transparent; color: #888; }
-    .trade-tab.active { color: #e0e0e0; border-color: #f0b90b; }
+    .trade-tab { cursor: pointer; padding: .5rem 1rem; border-bottom: 2px solid transparent; color: #6c757d; }
+    .trade-tab.active { color: #1a1a2e; border-color: #f0b90b; }
   </style>
 </head>
 <body>
@@ -46,7 +45,7 @@
             <span class="badge ms-1"
                   th:classappend="${marketOpen} ? 'bg-success' : 'bg-secondary'"
                   th:text="${marketStatus}"></span>
-            <span class="ms-2 small" id="detail-countdown" style="color:#888; font-variant-numeric:tabular-nums;"></span>
+            <span class="ms-2 small" id="detail-countdown" style="color:#6c757d; font-variant-numeric:tabular-nums;"></span>
           </div>
           <div class="text-end">
             <div class="fs-5 fw-bold" id="current-price"
@@ -75,7 +74,7 @@
 
         <!-- 차트 -->
         <div style="position:relative;">
-          <div id="chart-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#1a1d2e;z-index:1;border-radius:4px;">
+          <div id="chart-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;z-index:1;border-radius:4px;">
             <div class="spinner-border text-warning" role="status" style="width:2rem;height:2rem;">
               <span class="visually-hidden">Loading...</span>
             </div>
@@ -93,13 +92,13 @@
 
       <!-- 장마감 안내 -->
       <div th:unless="${marketOpen}" class="alert py-2 small mb-2 text-center"
-           style="background:#1e2235;border:1px solid #2a2d3e;color:#888;">
+           style="background:#f0f2f7;border:1px solid #dee2e6;color:#6c757d;">
         거래 가능 시간이 아닙니다 · 정규장 09:00~15:30 / 시간외 15:40~18:00
       </div>
 
       <!-- 모바일: 탭 UI -->
       <div class="card d-lg-none">
-        <div class="d-flex border-bottom border-secondary" style="overflow-x:auto;">
+        <div class="d-flex border-bottom" style="overflow-x:auto;">
           <div class="trade-tab active" id="tab-buy" onclick="switchTab('buy')">시장가 매수</div>
           <div class="trade-tab" id="tab-sell" onclick="switchTab('sell')"
                th:classappend="${heldQuantity > 0} ? '' : 'd-none'">
@@ -185,7 +184,7 @@
       <div class="card p-3 mb-3 d-none d-lg-block">
         <div class="d-flex gap-3 mb-3">
           <span class="fw-bold" id="dt-tab-market" onclick="switchDtTab('market')" style="cursor:pointer;color:#f0b90b;border-bottom:2px solid #f0b90b;padding-bottom:4px;">시장가</span>
-          <span class="fw-bold text-secondary" id="dt-tab-limit" onclick="switchDtTab('limit')" style="cursor:pointer;padding-bottom:4px;">지정가</span>
+          <span class="fw-bold" id="dt-tab-limit" onclick="switchDtTab('limit')" style="cursor:pointer;color:#6c757d;padding-bottom:4px;">지정가</span>
         </div>
 
         <!-- 데스크톱 시장가 -->
@@ -221,7 +220,7 @@
             <p class="small text-secondary mb-2">현재가 이하 도달 시 자동 체결</p>
             <button type="submit" class="btn btn-success w-100 fw-bold">지정가 매수 등록</button>
           </form>
-          <hr style="border-color:#2a2d3e;">
+          <hr style="border-color:#dee2e6;">
           <h6 class="text-secondary mb-3">지정가 매도</h6>
           <form th:if="${heldQuantity > 0}" th:action="@{/trade/limit/sell}" method="post">
             <input type="hidden" name="ticker" th:value="${stock.ticker}">
@@ -242,7 +241,7 @@
 
       <div class="card p-3 d-none d-lg-block" th:if="${heldQuantity > 0}">
         <h6 class="text-secondary mb-1">시장가 매도</h6>
-        <p class="small text-secondary mb-3">보유수량: <span class="text-white fw-bold" th:text="${heldQuantity + '주'}"></span></p>
+        <p class="small text-secondary mb-3">보유수량: <span class="text-dark fw-bold" th:text="${heldQuantity + '주'}"></span></p>
         <form th:action="@{/trade/sell}" method="post">
           <input type="hidden" name="ticker" th:value="${stock.ticker}">
           <div class="mb-3">
@@ -302,11 +301,11 @@
 
   const chartEl = document.getElementById('chart');
   const chart = LightweightCharts.createChart(chartEl, {
-    layout: { background: { color: '#1a1d2e' }, textColor: '#888' },
-    grid: { vertLines: { color: '#2a2d3e' }, horzLines: { color: '#2a2d3e' } },
+    layout: { background: { color: '#ffffff' }, textColor: '#495057' },
+    grid: { vertLines: { color: '#e2e5eb' }, horzLines: { color: '#e2e5eb' } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-    rightPriceScale: { borderColor: '#2a2d3e' },
-    timeScale: { borderColor: '#2a2d3e', timeVisible: true },
+    rightPriceScale: { borderColor: '#dee2e6' },
+    timeScale: { borderColor: '#dee2e6', timeVisible: true },
     width: chartEl.offsetWidth,
     height: chartEl.offsetHeight,
   });
@@ -390,9 +389,9 @@
     document.getElementById('dt-panel-limit').classList.toggle('d-none', isMarket);
     const mEl = document.getElementById('dt-tab-market');
     const lEl = document.getElementById('dt-tab-limit');
-    mEl.style.color = isMarket ? '#f0b90b' : '#9da5ae';
+    mEl.style.color = isMarket ? '#f0b90b' : '#6c757d';
     mEl.style.borderBottom = isMarket ? '2px solid #f0b90b' : 'none';
-    lEl.style.color = isMarket ? '#9da5ae' : '#f0b90b';
+    lEl.style.color = isMarket ? '#6c757d' : '#f0b90b';
     lEl.style.borderBottom = isMarket ? 'none' : '2px solid #f0b90b';
   }
 

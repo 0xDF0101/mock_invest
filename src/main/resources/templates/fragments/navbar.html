@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
   <!-- 페이지 로딩 진행 바 -->
   <div id="top-progress" style="position:fixed;top:0;left:0;width:0;height:3px;background:#f0b90b;z-index:10000;transition:width .3s ease,opacity .4s ease;opacity:0;pointer-events:none;border-radius:0 2px 2px 0;"></div>
   <script>
@@ -65,14 +65,14 @@
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-3" sec:authorize="isAuthenticated()">
-          <span class="text-light small">
+          <span class="text-dark small">
             <span class="text-secondary">안녕하세요,</span>
             <span class="text-warning fw-bold" sec:authentication="name"></span>님
           </span>
         </li>
         <li class="nav-item" sec:authorize="isAuthenticated()">
           <form th:action="@{/auth/logout}" method="post" class="d-inline">
-            <button type="submit" class="btn btn-outline-light btn-sm">로그아웃</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">로그아웃</button>
           </form>
         </li>
       </ul>
@@ -81,28 +81,28 @@
 </nav>
 
 <!-- 모바일 하단 네비게이션 (lg 이상에서는 숨김) -->
-<nav th:fragment="bottomnav" class="d-lg-none fixed-bottom bg-dark border-top border-secondary"
-     sec:authorize="isAuthenticated()" style="border-color:#2a2d3e!important;">
+<nav th:fragment="bottomnav" class="d-lg-none fixed-bottom bg-white border-top"
+     sec:authorize="isAuthenticated()">
   <div class="d-flex justify-content-around py-2">
-    <a th:href="@{/dashboard}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
+    <a th:href="@{/dashboard}" class="text-decoration-none text-center" style="color:#6c757d; min-width:64px;">
       <div style="font-size:1.3rem;">📊</div>
       <div style="font-size:.65rem;">대시보드</div>
     </a>
-    <a th:href="@{/stocks/search}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
+    <a th:href="@{/stocks/search}" class="text-decoration-none text-center" style="color:#6c757d; min-width:64px;">
       <div style="font-size:1.3rem;">🔍</div>
       <div style="font-size:.65rem;">종목검색</div>
     </a>
-    <a th:href="@{/trade/history}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
+    <a th:href="@{/trade/history}" class="text-decoration-none text-center" style="color:#6c757d; min-width:64px;">
       <div style="font-size:1.3rem;">📋</div>
       <div style="font-size:.65rem;">거래내역</div>
     </a>
-    <a th:href="@{/ranking}" class="text-decoration-none text-center" style="color:#888; min-width:64px;">
+    <a th:href="@{/ranking}" class="text-decoration-none text-center" style="color:#6c757d; min-width:64px;">
       <div style="font-size:1.3rem;">🏆</div>
       <div style="font-size:.65rem;">랭킹</div>
     </a>
     <form th:action="@{/auth/logout}" method="post" class="text-center" style="min-width:64px;">
       <button type="submit" class="border-0 bg-transparent text-decoration-none text-center p-0"
-              style="color:#888;">
+              style="color:#6c757d;">
         <div style="font-size:1.3rem;">🚪</div>
         <div style="font-size:.65rem;">로그아웃</div>
       </button>
